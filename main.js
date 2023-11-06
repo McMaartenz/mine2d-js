@@ -362,8 +362,6 @@ const chunkMgr = (() => {
         const xpos_chunk = Math.floor((xpos % CHUNK_WIDTH + (negative*CHUNK_WIDTH)) % CHUNK_WIDTH);
         
         return {
-            layer,
-            xpos_chunk,
             block: layer[xpos_chunk]
         };
     };
