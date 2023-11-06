@@ -126,9 +126,7 @@ const ctxWrite = (str, x, y, color, size, font = 'serif') => {
     ctx.fillText(str, x, y);    
 };
 
-// Fill rect with zoom and offset from player position
-const ctxRectZoom = (x, y, w, h, color) => {
-    ctx.fillStyle = color;
+const ctxConvertCoordinates = (x, y, w = 1, h = 1) => {
     const z = zoom;
 
     const px = player.x + 0.5, py = player.y + 0.5;
@@ -136,7 +134,26 @@ const ctxRectZoom = (x, y, w, h, color) => {
     const final_X = (x - px) * z + (canvas.width / 2);
     const final_Y = (-y + py) * z + (canvas.height / 2);
 
-    ctx.fillRect(final_X, final_Y, w * z + 0.5, h * z + 0.5);
+    return {
+        x: final_X,
+        y: final_Y,
+        w: w*z,
+        h: h*z
+    };
+};
+
+// Fill rect with zoom and offset from player position
+const ctxRectZoom = (x, y, w, h, color) => {
+    ctx.fillStyle = color;
+    
+    const c = ctx.convCoords(x, y, w, h);
+    ctx.fillRect(c.x, c.y, c.w + 0.5, c.h + 0.5);
+};
+
+// Draw a texture at x,y with block id
+const ctxDrawTexture = (x, y, id) => {
+    const c = ctx.convCoords(x, y, 1, 1);
+    ctx.drawImage($('#textureAtlas')[0], 16*id, 0, 16, 16, c.x, c.y, c.w + 0.5, c.h + 0.5);
 };
 
 // Print with managed X, Y
@@ -174,6 +191,8 @@ Object.assign(ctx, {
     write: ctxWrite,
 
     rectZ: ctxRectZoom,
+    texture: ctxDrawTexture,
+    convCoords: ctxConvertCoordinates,
 
     print: Printer.print,
     println: Printer.println,
@@ -348,7 +367,7 @@ const chunkMgr = (() => {
             for (const [x, block] of layer.entries()) {
                 if (block == 0) continue; // air
 
-                ctx.rectZ(x + chunkOffset, y, 1, 1, 'white'); // el cheapo method of showing a block is here
+                ctx.texture(x + chunkOffset, y, block - 1);
             }
         }
     };
