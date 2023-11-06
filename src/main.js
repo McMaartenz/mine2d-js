@@ -244,7 +244,7 @@ class Entity {
 
     blockBelowMe = () => {
         for (var ypos = Math.min(CHUNK_HEIGHT-1, this.y); ypos > 0; ypos--) {
-            const block = chunkMgr.blockAt(this.x, ypos);
+            const block = chunkMgr.blockAt(Math.round(this.x), ypos);
             if (block === undefined) continue;
             if (block.block != 0) {
                 return {
