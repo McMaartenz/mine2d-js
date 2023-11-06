@@ -44,7 +44,7 @@ const input = (() => {
     const getMousePosBlocky = () => {
         return {
             x: mx / zoom + player.x - (canvas.width / 2 / zoom),
-            y: -my / zoom + player.y + (canvas.height / 2 / zoom)
+            y: -my / zoom + player.y + (canvas.height / 2 / zoom) + 1
         };
     };
 
@@ -203,11 +203,11 @@ ChunkN: ${chunkMgr.chunkN(player.x)}
 Rendered chunks: [${chunkMgr.inView(player.x, zoom)}]
 
 Mouse: (${Math.round(mpos.x)},${Math.round(mpos.y)})
-Block: ${JSON.stringify(chunkMgr.blockAt(mpos.x, mpos.y))}
+  Chunk: ${chunkMgr.chunkN(Math.round(mpos.x))}
+  Block: ${JSON.stringify(chunkMgr.blockAt(Math.round(mpos.x), Math.round(mpos.y)))}
 `.split('\n');
 
     display.map(x => ctx.println(x));
-
 };
 
 /// Entities
@@ -215,7 +215,7 @@ class Entity {
     constructor() {
         Object.assign(this, {
             x: 0,
-            y: 56,
+            y: 0,
             xvel: 0,
             yvel: 0
         });
@@ -353,14 +353,19 @@ const chunkMgr = (() => {
         }
     };
 
-    const blockAt = (xpos, ypos) => {// TODO: fix this shit
-        if (ypos < 0 || ypos > CHUNK_HEIGHT) return {};
+    const blockAt = (xpos, ypos) => {
+        if (ypos < 0 || ypos >= CHUNK_HEIGHT) return { what: 'out-of-range' };
+        const negative = xpos < 0;
 
         const chunk = dataOf(chunkN(xpos));
         const layer = chunk.data[Math.floor(ypos)];
-
-        const xpos_chunk = Math.abs(xpos) % CHUNK_WIDTH;
-        return { layer, xpos_chunk, block: layer[xpos_chunk] };
+        const xpos_chunk = Math.floor((xpos % CHUNK_WIDTH + (negative*CHUNK_WIDTH)) % CHUNK_WIDTH);
+        
+        return {
+            layer,
+            xpos_chunk,
+            block: layer[xpos_chunk]
+        };
     };
 
     return {
