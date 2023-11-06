@@ -126,6 +126,7 @@ const ctxWrite = (str, x, y, color, size, font = 'serif') => {
     ctx.fillText(str, x, y);    
 };
 
+// Convert coordinates relative to player.xy
 const ctxConvertCoordinates = (x, y, w = 1, h = 1) => {
     const z = zoom;
 
@@ -215,6 +216,7 @@ Player:
     Y: ${round(player.y,1)}
    vX: ${round(player.xvel,1)}
    vY: ${round(player.yvel,1)}
+block: ${JSON.stringify(player.blockBelowMe())}
 
 Zoom: ${zoom}
 
@@ -234,16 +236,31 @@ class Entity {
     constructor() {
         Object.assign(this, {
             x: 0,
-            y: 0,
+            y: 57,
             xvel: 0,
             yvel: 0
         });
     }
 
+    blockBelowMe = () => {
+        for (var ypos = Math.min(CHUNK_HEIGHT-1, this.y); ypos > 0; ypos--) {
+            const block = chunkMgr.blockAt(this.x, ypos);
+            if (block === undefined) continue;
+            if (block.block != 0) {
+                return {
+                    block: block.block,
+                    ypos
+                };
+            }
+        }
+
+        return {};
+    };
+
     doGravity = () => {
         this.yvel = Math.max(TERMINAL_VELOCITY, this.yvel - GRAVITY * window.dtms);
-        this.y = Math.max(0/* TODO: Block Below Me */, this.y + this.yvel * window.dtms);
-        if (this.y == 0) this.yvel = 0;
+        this.y = Math.max(this.blockBelowMe().ypos, this.y + this.yvel * window.dtms);
+        if (this.y == this.blockBelowMe().ypos) this.yvel = 0;
     };
 
     doPhysics() {
@@ -252,7 +269,7 @@ class Entity {
     };
 
     onGround = () => {
-        return this.yvel == 0 && this.y == 0;
+        return this.yvel == 0 && this.y == this.blockBelowMe().ypos;
     };
 
     jump = () => {
