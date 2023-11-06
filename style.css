@@ -1,0 +1,10 @@
+body {
+    background-color: black;
+    color: white;
+}
+
+#playfield {
+    width: 1280px;
+    height: 720px;
+    background-color: #222;
+}
