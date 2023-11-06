@@ -354,7 +354,7 @@ const chunkMgr = (() => {
     };
 
     const blockAt = (xpos, ypos) => {
-        if (ypos < 0 || ypos >= CHUNK_HEIGHT) return { what: 'out-of-range' };
+        if (ypos < 0 || ypos >= CHUNK_HEIGHT) return {};
         const negative = xpos < 0;
 
         const chunk = dataOf(chunkN(xpos));
